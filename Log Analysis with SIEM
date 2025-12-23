@@ -1,0 +1,139 @@
+# SOC Level 1 - Log Analysis with SIEM
+
+This repository documents **hands-on SOC Level 1 investigations** conducted using **Splunk SIEM** in the *TryHackMe – Log Analysis with SIEM* lab. The focus of this portfolio is **alert triage, log investigation, and escalation-style analysis**, mirroring real-world blue team responsibilities in a Security Operations Centre.
+
+> **Role Focus:** SOC Analyst Level 1 | Defensive Security | Monitoring & Triage
+
+---
+
+## 🧠 Core SOC Skills Demonstrated
+
+* Monitoring and triaging SIEM alerts
+* Investigating suspicious activity across multiple log sources
+* Writing SPL queries to validate or dismiss alerts
+* Correlating host, network, and web logs
+* Identifying attack stages and persistence mechanisms
+* Documenting findings for escalation to SOC L2
+
+---
+
+## 🛠 SOC Tooling & Log Sources
+
+* **Splunk SIEM** (search, filtering, correlation)
+* **Sysmon** (process, network, and persistence visibility)
+* **Windows Event Logs** (Security & System)
+* **Linux auth.log & syslog**
+* **Web server access logs**
+* **TryHackMe simulated SOC environment**
+
+---
+
+
+
+## 🚨 SOC Investigation Scenarios
+
+### 1️⃣ Windows Endpoint Alert Triage
+
+**Alert Type:** Suspicious PowerShell Execution
+
+**SOC Actions:**
+
+* Investigated Sysmon EventCode 1 for encoded PowerShell commands
+* Identified parent-child process relationships
+* Validated malicious execution path and user context
+* Correlated with outbound network alerts (EventCode 3)
+
+**Outcome:** Confirmed malicious execution and potential C2 communication. Findings prepared for escalation.
+
+**Example SPL:**
+
+```spl
+index=winenv EventCode=1 *_powershell* AND *EncodedCommand*
+| table _time ComputerName ParentUser ParentImage Image CommandLine
+```
+
+---
+
+### 2️⃣ Linux Server Alert Validation
+
+**Alert Type:** Unusual SSH Login Activity
+
+**SOC Actions:**
+
+* Reviewed authentication logs for failed vs successful logins
+* Identified brute-force pattern followed by successful access
+* Detected privilege escalation to root
+* Investigated syslog for persistence mechanisms
+
+**Outcome:** Confirmed compromise and persistence via cron job. Escalated to SOC L2.
+
+**Example SPL:**
+
+```spl
+index=linux source="auth.log" process=sshd
+| search "Accepted password" OR "Failed password"
+```
+
+---
+
+### 3️⃣ Web Application Alert Investigation
+
+**Alert Type:** Spike in Web Server Requests
+
+**SOC Actions:**
+
+* Filtered access logs for authentication endpoints
+* Identified excessive POST requests to `/wp-login.php`
+* Classified activity as brute-force attack
+* Identified attacker tooling via User-Agent analysis
+
+**Outcome:** Confirmed WordPress brute-force activity using WPScan.
+
+**Example SPL:**
+
+```spl
+index=task6 method=POST uri_path="/wp-login.php"
+| stats count by clientip
+| where count > 25
+```
+
+---
+
+## 📊 Detection Coverage (SOC-Relevant)
+
+* Endpoint execution anomalies
+* Brute-force authentication attempts
+* Suspicious outbound network connections
+* Privilege escalation indicators
+* Persistence via services and cron jobs
+* Web-based attacks (brute force, web shells, DDoS indicators)
+
+---
+
+## 🧾 SOC Learning Outcomes
+
+* Developed SOC-style investigative workflows
+* Improved alert validation and false-positive analysis
+* Strengthened understanding of attacker behavior post-compromise
+* Practiced documentation suitable for ticketing and escalation
+
+---
+
+## 📌 Environment Notes
+
+* All activity occurred in a controlled lab environment
+* Data reflects simulated enterprise scenarios
+* Content is intended for defensive security learning and portfolio use
+
+---
+
+## 🚀 Next Steps (SOC Growth)
+
+* Build Splunk alert logic and thresholds
+* Map alerts to MITRE ATT&CK techniques
+* Practice shift handover and escalation notes
+* Expand investigations to cloud and identity logs
+
+---
+
+**Author:** Lisa
